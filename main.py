@@ -1,5 +1,3 @@
-from unittest import case
-
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
@@ -226,15 +224,14 @@ for i in range(1, quantidade_registros + 1):
         "duracao_recarga_min": duracao_recarga_min,
         "ocupacao_local_pct": ocupacao_local_pct,
         "fila_espera_min": fila_espera_min,
-        "tarifa_kwh_brl": tarifa_kwh,
-        "custo_energia_brl": custo_energia,
-        "taxa_servico_brl": taxa_servico,
-        "custo_total_brl": custo_total
+        "tarifa_kwh": tarifa_kwh,
+        "custo_energia": custo_energia,
+        "taxa_servico": taxa_servico,
+        "custo_total": custo_total
     })
 
 #Transformação da lista de dados em uma tabela
 df = pd.DataFrame(dados)
-
 # -------------------- Validação da base --------------------
 print("\n-------------------- VALIDAÇÃO DA BASE --------------------")
 
@@ -278,16 +275,16 @@ validacao_ocupacao = df["ocupacao_local_pct"].between(0, 100).all()
 validacao_fila = df["fila_espera_min"].between(0, 60).all()
 
 # 14. Validação da tarifa
-validacao_tarifa = df["tarifa_kwh_brl"].between(1.50, 4.00).all()
+validacao_tarifa = df["tarifa_kwh"].between(1.50, 4.00).all()
 
 # 15. Validação do custo da energia
-validacao_custo_energia = (df["custo_energia_brl"] > 0).all()
+validacao_custo_energia = (df["custo_energia"] > 0).all()
 
 # 16. Validação da taxa de serviço
-validacao_taxa_servico = (df["taxa_servico_brl"] > 0).all()
+validacao_taxa_servico = (df["taxa_servico"] > 0).all()
 
 # 17. Validação do custo total
-validacao_custo_total = (df["custo_total_brl"] > 0).all()
+validacao_custo_total = (df["custo_total"] > 0).all()
 
 # -------------------- Resultado das validações --------------------
 validacoes = {
@@ -325,3 +322,110 @@ else:
 # -------------------- Exportação da base --------------------
 # Exporta a base em formato CSV
 df.to_csv("base_recarga_veiculos_eletricos.csv", index=False, encoding="utf-8-sig")
+
+print("\nResumo estatístico das principais variáveis numéricas:")
+print(df[
+    [
+        "energia_consumida_kwh",
+        "potencia_media_kw",
+        "duracao_recarga_min",
+        "ocupacao_local_pct",
+        "fila_espera_min",
+        "tarifa_kwh",
+        "custo_energia",
+        "taxa_servico",
+        "custo_total"
+    ]
+].describe())
+
+print("\n-------------------- CUSTO MÉDIO POR TIPO DE LOCAL --------------------")
+custo_por_local = df.groupby("tipo_local")["custo_total"].mean().round(2)
+print(custo_por_local)
+
+print("\n-------------------- CUSTO MÉDIO POR CATEGORIA DE VEÍCULO --------------------")
+custo_por_veiculo = df.groupby("categoria_veiculo")["custo_total"].mean().round(2)
+print(custo_por_veiculo)
+
+print("\n-------------------- CUSTO MÉDIO POR PERÍODO DO DIA --------------------")
+custo_por_periodo = df.groupby("periodo_dia")["custo_total"].mean().round(2)
+print(custo_por_periodo)
+
+print("\n-------------------- 10 SESSÕES MAIS CARAS --------------------")
+sessoes_mais_caras = df.sort_values(
+    by="custo_total",
+    ascending=False
+).head(10)
+print(sessoes_mais_caras[
+    [
+        "id_sessao",
+        "tipo_local",
+        "categoria_veiculo",
+        "energia_consumida_kwh",
+        "tarifa_kwh",
+        "taxa_servico",
+        "custo_total"
+    ]
+])
+#Quanto maior a relação, maior influência uma na outra
+print("\n-------------------- CORRELAÇÃO ENTRE VARIÁVEIS NUMÉRICAS --------------------")
+correlacoes = df[
+    [
+        "capacidade_bateria_kwh",
+        "variacao_bateria_pct",
+        "energia_consumida_kwh",
+        "potencia_media_kw",
+        "duracao_recarga_min",
+        "tarifa_kwh",
+        "taxa_servico",
+        "custo_total"
+    ]
+].corr().round(2)
+print(correlacoes)
+
+print("\n-------------------- VARIÁVEIS MAIS RELACIONADAS AO CUSTO TOTAL --------------------")
+correlacao_custo = correlacoes["custo_total"].sort_values(ascending=False)
+print(correlacao_custo)
+
+print("\n-------------------- SIMULAÇÃO DE CENÁRIOS --------------------")
+def calcular_custo_recarga(energia_consumida_kwh, tarifa_kwh, taxa_servico):
+    custo_energia = energia_consumida_kwh * tarifa_kwh
+    custo_total = custo_energia + taxa_servico
+    return round(custo_total, 2)
+
+cenario_baixo_custo = calcular_custo_recarga(
+    energia_consumida_kwh=18,
+    tarifa_kwh=1.80,
+    taxa_servico=3.00
+)
+
+cenario_intermediario = calcular_custo_recarga(
+    energia_consumida_kwh=38,
+    tarifa_kwh=2.30,
+    taxa_servico=5.00
+)
+
+cenario_alto_custo = calcular_custo_recarga(
+    energia_consumida_kwh=65,
+    tarifa_kwh=3.20,
+    taxa_servico=8.00
+)
+print(f"Cenário de baixo custo: R$ {cenario_baixo_custo}")
+print(f"Cenário intermediário: R$ {cenario_intermediario}")
+print(f"Cenário de alto custo: R$ {cenario_alto_custo}")
+
+print("\n-------------------- INTERPRETAÇÃO DOS RESULTADOS --------------------")
+media_custo = df["custo_total"].mean()
+media_energia = df["energia_consumida_kwh"].mean()
+media_duracao = df["duracao_recarga_min"].mean()
+
+local_maior_custo = custo_por_local.idxmax()
+valor_maior_custo_local = custo_por_local.max()
+
+veiculo_maior_custo = custo_por_veiculo.idxmax()
+valor_maior_custo_veiculo = custo_por_veiculo.max()
+
+print(f"O custo médio das sessões foi de R$ {media_custo:.2f}.")
+print(f"A energia média consumida por sessão foi de {media_energia:.2f} kWh.")
+print(f"A duração média das sessões foi de {media_duracao:.0f} minutos.")
+print(f"O tipo de local com maior custo médio foi {local_maior_custo}, com média de R$ {valor_maior_custo_local:.2f}.")
+print(f"A categoria de veículo com maior custo médio foi {veiculo_maior_custo}, com média de R$ {valor_maior_custo_veiculo:.2f}.")

@@ -1,4 +1,4 @@
-﻿id_sessao,data_sessao,dia_semana,hora_inicio,periodo_dia,tipo_local,perfil_usuario,categoria_veiculo,capacidade_bateria_kwh,bateria_inicial_pct,bateria_final_pct,variacao_bateria_pct,energia_consumida_kwh,potencia_media_kw,duracao_recarga_min,ocupacao_local_pct,fila_espera_min,tarifa_kwh_brl,custo_energia_brl,taxa_servico_brl,custo_total_brl
+﻿id_sessao,data_sessao,dia_semana,hora_inicio,periodo_dia,tipo_local,perfil_usuario,categoria_veiculo,capacidade_bateria_kwh,bateria_inicial_pct,bateria_final_pct,variacao_bateria_pct,energia_consumida_kwh,potencia_media_kw,duracao_recarga_min,ocupacao_local_pct,fila_espera_min,tarifa_kwh,custo_energia,taxa_servico,custo_total
 S001,2026-01-09,sexta,18,noite,centro_empresarial,mensalista,suv_eletrico,90.92,14.71,73.73,59.02,53.66,39.51,81,85.37,33,2.5,134.15,5.5,139.65
 S002,2026-02-16,segunda,3,madrugada,eletroposto_comercial,mensalista,suv_eletrico,97.8,42.19,95.1,52.91,51.75,32.2,96,5.68,2,2.5,129.38,7.0,136.38
 S003,2026-01-09,sexta,13,tarde,eletroposto_comercial,visitante,utilitario_eletrico,82.11,47.9,82.08,34.18,28.07,44.33,38,75.72,32,2.8,78.6,7.0,85.6
